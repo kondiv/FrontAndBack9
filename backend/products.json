@@ -1,0 +1,33 @@
+[
+  {
+    "id": 3,
+    "name": "фыва",
+    "price": 2,
+    "description": "вфыафыва",
+    "category": "Изменение"
+  },
+  {
+    "id": 4,
+    "name": "Product 4",
+    "price": 400,
+    "description": "Description of Product 4",
+    "category": "Category 2"
+  },
+  {
+    "id": 5,
+    "name": "Product 5",
+    "price": 500,
+    "description": "Description of Product 5",
+    "categories": [
+      "Category 1",
+      "Category 2"
+    ]
+  },
+  {
+    "name": "Товарчик",
+    "price": 1000,
+    "description": "Это товарчик, добавленный через панель админа",
+    "category": "Компьютерная перефирия",
+    "id": 6
+  }
+]

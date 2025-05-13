@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  client:
+    build: .
+    command: npm run start
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/products.json:/app/backend/products.json
+      - ./frontend:/app/frontend
+
+  admin:
+    build: .
+    command: npm run admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/products.json:/app/backend/products.json
+      - ./frontend:/app/frontend
+
+  graphql:
+    build: .
+    command: npm run graphql
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend/products.json:/app/backend/products.json

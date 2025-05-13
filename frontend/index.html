@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Catalog</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Product Catalog</h1>
+  
+  <div class="query-buttons">
+    <button onclick="loadProducts('allProducts')">All Products</button>
+    <button onclick="loadProducts('namesAndPrices')">Names & Prices</button>
+    <button onclick="loadProducts('namesOnly')">Names Only</button>
+    <button onclick="loadProducts('pricesOnly')">Prices Only</button>
+  </div>
+
+  <div id="products"></div>
+  
+  <div class="chat-container">
+    <h2>Support Chat</h2>
+    <div id="chat-messages"></div>
+    <input type="text" id="chat-input" placeholder="Type your message...">
+    <button id="send-button">Send</button>
+  </div>
+
+  <script>
+    // GraphQL queries
+    const queries = {
+      allProducts: `{
+        products {
+          id
+          name
+          price
+          description
+          category
+        }
+      }`,
+      namesAndPrices: `{
+        productsWithNamesAndPrices {
+          name
+          price
+        }
+      }`,
+      namesOnly: `{
+        productNames
+      }`,
+      pricesOnly: `{
+        productPrices
+      }`
+    };
+
+    // Load products using GraphQL
+    async function loadProducts(queryType = 'allProducts') {
+      try {
+        const response = await fetch('http://localhost:4000/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            query: queries[queryType]
+          })
+        });
+        
+        const result = await response.json();
+        displayProducts(result.data);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    }
+
+    function displayProducts(data) {
+      const productsDiv = document.getElementById('products');
+      productsDiv.innerHTML = '';
+
+      if (data.productsWithNamesAndPrices) {
+        data.productsWithNamesAndPrices.forEach(product => {
+          const productDiv = document.createElement('div');
+          productDiv.className = 'product';
+          productDiv.innerHTML = `
+            <h2>${product.name}</h2>
+            <p>Price: $${product.price}</p>
+          `;
+          productsDiv.appendChild(productDiv);
+        });
+      } else if (data.productNames) {
+        data.productNames.forEach(name => {
+          const productDiv = document.createElement('div');
+          productDiv.className = 'product';
+          productDiv.innerHTML = `<h2>${name}</h2>`;
+          productsDiv.appendChild(productDiv);
+        });
+      } else if (data.products) {
+        data.products.forEach(product => {
+          const productDiv = document.createElement('div');
+          productDiv.className = 'product';
+          productDiv.innerHTML = `
+            <h2>${product.name}</h2>
+            <p>Price: $${product.price}</p>
+            <p>${product.description}</p>
+            <p>Category: ${product.category || ''}</p>
+          `;
+          productsDiv.appendChild(productDiv);
+        });
+      }
+    }
+
+    // Chat functionality
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+
+    // Connect to WebSocket server
+    const ws = new WebSocket('ws://localhost:3000');
+
+    ws.onmessage = (event) => {
+      const message = document.createElement('div');
+      message.textContent = event.data;
+      chatMessages.appendChild(message);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    function sendMessage() {
+      const message = chatInput.value;
+      if (message.trim() !== '') {
+        ws.send(message);
+        chatInput.value = '';
+      }
+    }
+
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // Load products on page load
+    loadProducts('allProducts');
+  </script>
+</body>
+</html>
